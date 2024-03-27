@@ -34,7 +34,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import lombok.NonNull;
+import javax.validation.constraints.NotNull;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -335,8 +335,8 @@ public class GlueSerde implements Serde {
     private static final FixedJsonDeserializer JSON_DESERIALIZER = new FixedJsonDeserializer();
 
     @Override
-    public GlueSchemaRegistryDataFormatDeserializer getInstance(@NonNull DataFormat dataFormat,
-                                                                @NonNull GlueSchemaRegistryConfiguration configs) {
+    public GlueSchemaRegistryDataFormatDeserializer getInstance(@NotNull DataFormat dataFormat,
+                                                                @NotNull GlueSchemaRegistryConfiguration configs) {
       if (dataFormat == DataFormat.JSON) {
         return JSON_DESERIALIZER;
       } else {
@@ -353,8 +353,8 @@ public class GlueSerde implements Serde {
         GlueSchemaRegistryDeserializerDataParser.getInstance();
 
     @Override
-    public Object deserialize(@NonNull ByteBuffer buffer,
-                              @NonNull com.amazonaws.services.schemaregistry.common.Schema schemaObject) {
+    public Object deserialize(@NotNull ByteBuffer buffer,
+                              @NotNull com.amazonaws.services.schemaregistry.common.Schema schemaObject) {
       String schema = schemaObject.getSchemaDefinition();
       byte[] data = DESERIALIZER_DATA_PARSER.getPlainData(buffer);
       return JsonDataWithSchema.builder(schema, new String(data)).build();
