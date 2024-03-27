@@ -1,4 +1,4 @@
-package com.provectus.kafka.ui.serdes.glue;
+package io.kafbat.ui.serde.glue;
 
 import com.amazonaws.services.schemaregistry.common.AWSDeserializerInput;
 import com.amazonaws.services.schemaregistry.common.GlueSchemaRegistryDataFormatDeserializer;
@@ -15,15 +15,18 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.protobuf.DynamicMessage;
-import com.provectus.kafka.ui.serde.api.DeserializeResult;
-import com.provectus.kafka.ui.serde.api.RecordHeaders;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
-
+import io.kafbat.ui.serde.api.DeserializeResult;
+import io.kafbat.ui.serde.api.PropertyResolver;
+import io.kafbat.ui.serde.api.RecordHeaders;
+import io.kafbat.ui.serde.api.SchemaDescription;
+import io.kafbat.ui.serde.api.Serde;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -31,18 +34,15 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-
 import lombok.NonNull;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
-import software.amazon.awssdk.auth.credentials.*;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
-import com.provectus.kafka.ui.serde.api.PropertyResolver;
-import com.provectus.kafka.ui.serde.api.SchemaDescription;
-import com.provectus.kafka.ui.serde.api.Serde;
-
-import java.util.Optional;
-
 import software.amazon.awssdk.profiles.ProfileFile;
 import software.amazon.awssdk.profiles.ProfileFileSystemSetting;
 import software.amazon.awssdk.regions.Region;
@@ -155,10 +155,9 @@ public class GlueSerde implements Serde {
     Optional<String> awsSecretKey = serdeProperties.getProperty("awsSecretAccessKey", String.class);
     Optional<String> awsSessionToken = serdeProperties.getProperty("awsSessionToken", String.class);
     if (awsAccessKey.isPresent() && awsSecretKey.isPresent()) {
-      if (awsSessionToken.isEmpty()) {
-        return () -> AwsBasicCredentials.create(awsAccessKey.get(), awsSecretKey.get());
-      }
-      return () -> AwsSessionCredentials.create(awsAccessKey.get(), awsSecretKey.get(), awsSessionToken.get());
+      return awsSessionToken.<AwsCredentialsProvider>map(
+              s -> () -> AwsSessionCredentials.create(awsAccessKey.get(), awsSecretKey.get(), s))
+          .orElseGet(() -> () -> AwsBasicCredentials.create(awsAccessKey.get(), awsSecretKey.get()));
     }
 
     Optional<String> profileName = serdeProperties.getProperty("awsProfileName", String.class);
@@ -293,7 +292,8 @@ public class GlueSerde implements Serde {
             glueClient.getSchemaVersion(
                 GetSchemaVersionRequest.builder()
                     .schemaId(SchemaId.builder().registryName(registryName).schemaName(schemaName).build())
-                    .schemaVersionNumber(SchemaVersionNumber.builder().versionNumber(schemaResponse.latestSchemaVersion()).build())
+                    .schemaVersionNumber(
+                        SchemaVersionNumber.builder().versionNumber(schemaResponse.latestSchemaVersion()).build())
                     .build())
         );
       } catch (EntityNotFoundException nfe) {
@@ -307,7 +307,8 @@ public class GlueSerde implements Serde {
     return new Deserializer() {
       @Override
       public DeserializeResult deserialize(RecordHeaders recordHeaders, byte[] bytes) {
-        Object obj = deserializationFacade.deserialize(AWSDeserializerInput.builder().buffer(ByteBuffer.wrap(bytes)).build());
+        Object obj =
+            deserializationFacade.deserialize(AWSDeserializerInput.builder().buffer(ByteBuffer.wrap(bytes)).build());
         String val = null;
         if (obj instanceof GenericRecord) {
           val = JsonUtil.avroRecordToJson((GenericRecord) obj);
