@@ -4,7 +4,7 @@ services:
 
   kafka-ui:
     container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
+    image: ghcr.io/kafbat/kafka-ui:latest
     ports:
       - 8080:8080
     depends_on:
@@ -20,7 +20,7 @@ services:
 
       kafka.clusters.0.serde.0.name: GlueSchemaRegistry
       kafka.clusters.0.serde.0.filePath: /glue-serde/kafkaui-glue-serde-1.0-SNAPSHOT-jar-with-dependencies.jar
-      kafka.clusters.0.serde.0.className: com.provectus.kafka.ui.serdes.glue.GlueSerde
+      kafka.clusters.0.serde.0.className: io.kafbat.ui.serde.glue.GlueSerde
       kafka.clusters.0.serde.0.properties.region: us-east-1  #required
       kafka.clusters.0.serde.0.properties.registry: kui-test #required, name of Glue Schema Registry
       # template that will be used to find schema name for topic key. Optional, default is null (not set).

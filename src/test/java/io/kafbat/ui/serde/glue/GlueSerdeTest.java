@@ -1,4 +1,4 @@
-package com.provectus.kafka.ui.serdes.glue;
+package io.kafbat.ui.serde.glue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,10 +20,10 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import com.provectus.kafka.ui.serde.api.DeserializeResult;
-import com.provectus.kafka.ui.serde.api.PropertyResolver;
-import com.provectus.kafka.ui.serde.api.Serde;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
+import io.kafbat.ui.serde.api.DeserializeResult;
+import io.kafbat.ui.serde.api.PropertyResolver;
+import io.kafbat.ui.serde.api.Serde;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -307,7 +307,7 @@ class GlueSerdeTest {
   @Test
   void testProtoFormatSerdeCompatibility() throws Exception {
     var schema = "syntax = \"proto3\";\n"
-        + "package com.provectus;\n"
+        + "package io.kafbat;\n"
         + "\n"
         + "message TestProtoRecord {\n"
         + "  string field1 = 1;\n"

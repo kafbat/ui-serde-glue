@@ -1,4 +1,4 @@
-package com.provectus.kafka.ui.serdes.glue;
+package io.kafbat.ui.serde.glue;
 
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
