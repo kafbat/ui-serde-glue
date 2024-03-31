@@ -1,0 +1,28 @@
+version: 2
+updates:
+
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "10:00"
+    timezone: Europe/London
+  reviewers:
+    - "kafbat/backend"
+  open-pull-requests-limit: 10
+  labels:
+    - "type/dependencies"
+    - "scope/backend"
+
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "10:00"
+    timezone: Europe/London
+  reviewers:
+    - "kafbat/devops"
+  open-pull-requests-limit: 10
+  labels:
+    - "type/dependencies"
+    - "scope/infra"
