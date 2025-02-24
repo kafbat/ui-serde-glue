@@ -21,11 +21,12 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
           cache: 'maven'
-
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ vars.AWS_ROLE }}
       - name: Build with Maven
         id: build
-        env:
-          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_KEY}}
         run: |
           mvn -B -V -ntp clean package
