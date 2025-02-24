@@ -1,7 +1,10 @@
 name: Pull Request Build
 
+permissions:
+  id-token: write
+  contents: read
+  
 on:
-
   pull_request:
     types: [ "opened", "reopened", "synchronize",  ]
 
