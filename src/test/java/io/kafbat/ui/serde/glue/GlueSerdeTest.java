@@ -83,8 +83,9 @@ class GlueSerdeTest {
 
   private static final String REGISTRY_NAME = "kui-glue-serde-test-registry";
 
+  private static final Network NETWORK = Network.newNetwork();
   private static final KafkaContainer KAFKA = new KafkaContainer(
-      DockerImageName.parse("confluentinc/cp-kafka:7.2.1")).withNetwork(Network.SHARED);
+      DockerImageName.parse("confluentinc/cp-kafka:7.2.1")).withNetwork(NETWORK);
 
   private static GlueClient GLUE_CLIENT;
 
@@ -115,6 +116,7 @@ class GlueSerdeTest {
   @AfterAll
   static void tearDown() {
     KAFKA.close();
+    NETWORK.close();
     try {
       GLUE_CLIENT.deleteRegistry(
           DeleteRegistryRequest.builder().registryId(
@@ -194,6 +196,7 @@ class GlueSerdeTest {
           DefaultCredentialsProvider.create(),
           REGION,
           null,
+          null,
           REGISTRY_NAME,
           null,
           "%s",
@@ -227,6 +230,7 @@ class GlueSerdeTest {
       serde.configure(
           DefaultCredentialsProvider.create(),
           REGION,
+          null,
           null,
           REGISTRY_NAME,
           null,
@@ -403,6 +407,7 @@ class GlueSerdeTest {
           DefaultCredentialsProvider.create(),
           REGION,
           null,
+          null,
           REGISTRY_NAME,
           null,
           "%s",
@@ -457,6 +462,7 @@ class GlueSerdeTest {
           DefaultCredentialsProvider.create(),
           REGION,
           null,
+          null,
           REGISTRY_NAME,
           "%s-key",
           "%s-value",
@@ -483,6 +489,7 @@ class GlueSerdeTest {
       serde.configure(
           DefaultCredentialsProvider.create(),
           REGION,
+          null,
           null,
           REGISTRY_NAME,
           "%s-key",

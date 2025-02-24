@@ -55,6 +55,8 @@ import software.amazon.awssdk.services.glue.model.GetSchemaVersionRequest;
 import software.amazon.awssdk.services.glue.model.GetSchemaVersionResponse;
 import software.amazon.awssdk.services.glue.model.SchemaId;
 import software.amazon.awssdk.services.glue.model.SchemaVersionNumber;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider;
 
 public class GlueSerde implements Serde {
 
@@ -88,6 +90,7 @@ public class GlueSerde implements Serde {
         serdeProperties.getProperty("region", String.class)
             .orElseThrow(() -> new IllegalArgumentException("region not provided for GlueSerde")),
         serdeProperties.getProperty("endpoint", String.class).orElse(null),
+        serdeProperties.getProperty("roleArn", String.class).orElse(null),
         serdeProperties.getProperty("registry", String.class)
             .orElseThrow(() -> new IllegalArgumentException("registry not provided for GlueSerde")),
         serdeProperties.getProperty("keySchemaNameTemplate", String.class)
@@ -114,6 +117,7 @@ public class GlueSerde implements Serde {
   void configure(AwsCredentialsProvider credentialsProvider,
                  String region,
                  @Nullable String endpoint,
+                 @Nullable String roleArn,
                  String registryName,
                  @Nullable String keySchemaNameTemplate,
                  String valueSchemaNameTemplate,
@@ -158,6 +162,19 @@ public class GlueSerde implements Serde {
       return awsSessionToken.<AwsCredentialsProvider>map(
               s -> () -> AwsSessionCredentials.create(awsAccessKey.get(), awsSecretKey.get(), s))
           .orElseGet(() -> () -> AwsBasicCredentials.create(awsAccessKey.get(), awsSecretKey.get()));
+    }
+
+    Optional<String> roleArn = serdeProperties.getProperty("roleArn", String.class);
+    if (roleArn.isPresent()) {
+      return StsAssumeRoleCredentialsProvider.builder()
+          .refreshRequest(b -> b.roleArn(roleArn.get())
+              .roleSessionName("kafbat-ui-" + UUID.randomUUID()))
+          .stsClient(StsClient.builder()
+              .credentialsProvider(DefaultCredentialsProvider.create())
+              .region(Region.of(serdeProperties.getProperty("region", String.class)
+                  .orElseThrow(() -> new IllegalArgumentException("region required for assume role"))))
+              .build())
+          .build();
     }
 
     Optional<String> profileName = serdeProperties.getProperty("awsProfileName", String.class);
