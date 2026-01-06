@@ -1,5 +1,7 @@
 package io.kafbat.ui.serde.glue;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -37,10 +39,20 @@ import org.apache.avro.generic.GenericData;
  */
 public class JsonAvroConversion {
 
-  private static final JsonMapper MAPPER = new JsonMapper();
+  private static final JsonMapper MAPPER = JsonMapper.builder()
+      .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN)
+      .build();
   private static final Schema NULL_SCHEMA = Schema.create(Schema.Type.NULL);
 
   private JsonAvroConversion() {
+  }
+
+  public static String toJsonString(Object obj, Schema avroSchema) {
+    try {
+      return MAPPER.writeValueAsString(convertAvroToJson(obj, avroSchema));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -183,6 +195,7 @@ public class JsonAvroConversion {
       } else {
         return new TextNode(obj.toString());
       }
+      decimal = decimal.stripTrailingZeros();
       return new DecimalNode(decimal);
     }),
 

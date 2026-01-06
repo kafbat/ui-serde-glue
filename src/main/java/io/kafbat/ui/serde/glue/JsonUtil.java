@@ -18,7 +18,7 @@ class JsonUtil {
   }
 
   static String avroRecordToJson(GenericRecord record) {
-    return JsonAvroConversion.convertAvroToJson(record, record.getSchema()).toString();
+    return JsonAvroConversion.toJsonString(record, record.getSchema());
   }
 
   static String protoMsgToJson(DynamicMessage msg) {

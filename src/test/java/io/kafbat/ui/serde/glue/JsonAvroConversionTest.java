@@ -34,6 +34,10 @@ class JsonAvroConversionTest {
                 {
                   "name": "whole_number",
                   "type": { "type": "bytes", "logicalType": "decimal", "precision": 10, "scale": 2 }
+                },
+                {
+                  "name": "round_number",
+                  "type": { "type": "bytes", "logicalType": "decimal", "precision": 10, "scale": 2 }
                 }
               ]
             }
@@ -43,6 +47,7 @@ class JsonAvroConversionTest {
         .set("amount", new BigDecimal("1368.5000000000"))
         .set("zero_amount", new BigDecimal("0.0000000000"))
         .set("whole_number", new BigDecimal("42.00"))
+        .set("round_number", new BigDecimal("10"))
         .build();
 
     String json = JsonUtil.avroRecordToJson(record);
@@ -56,6 +61,9 @@ class JsonAvroConversionTest {
 
     assertTrue(json.contains("\"whole_number\":42"),
         "Whole number decimal should be formatted as number: " + json);
+
+    assertTrue(json.contains("\"round_number\":10"),
+        "Round number decimal should be formatted as number: " + json);
   }
 
   @Test
